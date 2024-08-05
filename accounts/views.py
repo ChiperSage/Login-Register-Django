@@ -52,4 +52,31 @@ class UserUpdateView(View):
     def get(self, request, pk):
         user = get_object_or_404(User, user_id=pk)
         form = UserUpdateForm(instance=user)
-        return render(request, 'accounts/user_update
+        return render(request, 'accounts/user_update.html', {'form': form, 'user': user})
+
+    def post(self, request, pk):
+        user = get_object_or_404(User, user_id=pk)
+        form = UserUpdateForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('user_list')
+        return render(request, 'accounts/user_update.html', {'form': form, 'user': user})
+
+@method_decorator(login_required, name='dispatch')
+class UserListView(View):
+    def get(self, request):
+        users = User.objects.all()
+        return render(request, 'accounts/user_list.html', {'users': users})
+
+@method_decorator(login_required, name='dispatch')
+class UserProfileView(View):
+    def get(self, request):
+        form = ProfileForm(instance=request.user)
+        return render(request, 'accounts/profile.html', {'form': form})
+
+    def post(self, request):
+        form = ProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')
+        return render(request, 'accounts/profile.html', {'form': form})
